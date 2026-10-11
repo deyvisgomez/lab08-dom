@@ -87,8 +87,82 @@ form.addEventListener("submit", (e) => {
 
 ## Version 3: con clases y objetos
 
+Que agregue: las clases Tarea y ListaTareas y una funcion render() que dibuja la lista usando los objetos.
+
+Por que: para separar los datos (objetos) de lo que se ve (DOM) y tener el codigo mas ordenado.
+
+Que cambio en la pagina: se ve y funciona igual, pero ahora las tareas viven en lista.tareas y ya no solo en el HTML.
+
+```js
+class Tarea {
+  constructor(texto) {
+    this.texto = texto;
+    this.completada = false;
+  }
+  alternar() {
+    this.completada = !this.completada;
+  }
+  descripcion() {
+    return (this.completada ? "[x] " : "[ ] ") + this.texto;
+  }
+}
+
+class ListaTareas {
+  constructor() {
+    this.tareas = [];
+  }
+  agregar(texto) {
+    this.tareas.push(new Tarea(texto));
+  }
+  eliminar(tarea) {
+    this.tareas = this.tareas.filter((t) => t !== tarea);
+  }
+}
+
+const lista = new ListaTareas();
+
+function render() {
+  ul.replaceChildren();
+  lista.tareas.forEach((tarea) => {
+    const li = document.createElement("li");
+    li.textContent = tarea.descripcion();
+    li.addEventListener("click", () => {
+      tarea.alternar();
+      render();
+    });
+
+    const borrar = document.createElement("button");
+    borrar.textContent = "Borrar";
+    borrar.addEventListener("click", (e) => {
+      e.stopPropagation();
+      lista.eliminar(tarea);
+      render();
+    });
+
+    li.appendChild(borrar);
+    ul.appendChild(li);
+  });
+}
+```
+
 ## Donde uso DOM, eventos y objetos
+
+| Parte   | Donde esta en el codigo final                                       |
+| ------- | ------------------------------------------------------------------- |
+| DOM     | createElement, append, replaceChildren y la funcion render()        |
+| Eventos | submit en el form, input en el campo, click en la tarea y en Borrar |
+| Objetos | Las clases Tarea y ListaTareas y el objeto lista                    |
 
 ## Pruebas realizadas
 
-## Por que disene asi mi clase
+| Accion                          | Resultado esperado             | Resultado obtenido             | Cumple (Si/No) |
+| ------------------------------- | ------------------------------ | ------------------------------ | -------------- |
+| Enviar con el campo vacio       | Mensaje rojo de error          | Mensaje rojo de error          | Si             |
+| Escribir "ab" y enviar          | Mensaje de minimo 3 caracteres | Mensaje de minimo 3 caracteres | Si             |
+| Escribir "Estudiar JS" y enviar | La tarea aparece en la lista   | La tarea aparece en la lista   | Si             |
+| Click sobre una tarea           | La tarea se tacha              | La tarea se tacha              | Si             |
+| Click en Borrar                 | La tarea desaparece            | La tarea desaparece            | Si             |
+
+## Por que diseñe asi mi clase
+
+La clase Tarea tiene texto y completada porque es lo minimo que necesito para mostrar una tarea y saber si ya esta hecha. Sus metodos alternar() y descripcion() hacen que la tarea cambie su estado y se muestre como texto sin depender del DOM. La clase ListaTareas guarda el arreglo tareas y tiene agregar() y eliminar() para manejar todas las tareas en un solo lugar. Asi el DOM solo se encarga de dibujar y escuchar eventos, y la logica queda separada.
